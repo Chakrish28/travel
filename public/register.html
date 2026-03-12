@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buddy Hub - Register</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins', sans-serif;
+}
+
+body{
+    height:100vh;
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    background: url('https://www.mistay.in/travel-blog/content/images/2020/07/steep_extreme_sport_game_4k.jpg') no-repeat center center/cover;
+    overflow:hidden;
+}
+
+@keyframes slideIn {
+    from{ transform:translateX(100px); opacity:0; }
+    to{ transform:translateX(0); opacity:1; }
+}
+
+.container{
+    width:1000px;
+    min-height:600px;
+    margin-right:18%;
+    display:flex;
+    border-radius:20px 0 0 20px;
+    overflow:hidden;
+    box-shadow:-25px 35px 80px rgba(0,0,0,0.7);
+    animation:slideIn 1s ease forwards;
+}
+
+.left{
+    flex:1;
+    background:linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0.3));
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:flex-start;
+    padding:60px;
+    color:white;
+    backdrop-filter:blur(4px);
+}
+
+.left h1{
+    font-size:42px;
+    font-weight:700;
+    letter-spacing:2px;
+}
+
+.left p{
+    margin-top:20px;
+    font-size:15px;
+    opacity:0.9;
+    line-height:1.6;
+}
+
+.right{
+    flex:1;
+    background:rgba(10, 45, 78, 0.92);
+    backdrop-filter:blur(12px);
+    padding:45px 50px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    color:white;
+}
+
+.right h2{
+    font-size:24px;
+    margin-bottom:22px;
+    text-align:center;
+    font-weight:600;
+}
+
+.form-group{
+    margin-bottom:14px;
+}
+
+.form-group input{
+    width:100%;
+    padding:12px 15px;
+    border-radius:8px;
+    border:none;
+    outline:none;
+    font-size:13px;
+    font-family:'Poppins', sans-serif;
+    transition:0.3s;
+}
+
+.form-group input:focus{
+    box-shadow:0 0 12px #ff6b35;
+    transform:scale(1.02);
+}
+
+.register-btn{
+    width:100%;
+    padding:13px;
+    border:none;
+    border-radius:8px;
+    background:#ff6b35;
+    color:white;
+    font-size:15px;
+    font-family:'Poppins', sans-serif;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.3s;
+    margin-top:5px;
+}
+
+.register-btn:hover{
+    background:#ff3c00;
+    transform:translateY(-2px);
+    box-shadow:0 8px 20px rgba(0,0,0,0.4);
+}
+
+.register-btn:disabled{
+    background:#888;
+    cursor:not-allowed;
+    transform:none;
+}
+
+.error-msg{
+    background:rgba(239,68,68,0.2);
+    border:1px solid rgba(239,68,68,0.5);
+    color:#fca5a5;
+    padding:10px 14px;
+    border-radius:8px;
+    margin-bottom:12px;
+    font-size:13px;
+    display:none;
+    animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-6px); }
+    75%{ transform:translateX(6px); }
+}
+
+.bottom-text{
+    margin-top:18px;
+    text-align:center;
+    font-size:14px;
+}
+
+.bottom-text a{
+    color:#ff6b35;
+    text-decoration:none;
+    font-weight:500;
+}
+
+.bottom-text a:hover{
+    text-decoration:underline;
+}
+
+.back-home-link {
+    margin-top: 12px;
+    display: block;
+    color: rgba(255, 255, 255, 0.6) !important;
+    font-size: 13px;
+    transition: 0.3s;
+}
+
+.back-home-link:hover {
+    color: #fff !important;
+}
+
+@media(max-width:900px){
+    body{ justify-content:center; }
+    .container{ flex-direction:column; width:95%; height:auto; margin-right:0; border-radius:20px; }
+    .left, .right{ width:100%; height:auto; padding:40px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="left">
+        <h1>HUNT COMPANIONS</h1>
+        <p>Discover travel partners who match your vibe. Plan adventures, explore safely, and create unforgettable memories.</p>
+    </div>
+
+    <div class="right">
+        <h2>Create Account</h2>
+        <div class="error-msg" id="errorMsg"></div>
+        <div class="form-group"><input type="text" id="name" placeholder="Full Name" required></div>
+        <div class="form-group"><input type="email" id="email" placeholder="Email Address" required></div>
+        <div class="form-group"><input type="password" id="password" placeholder="Password (min 6 chars)" required></div>
+        <div class="form-group"><input type="password" id="confirmPassword" placeholder="Confirm Password" required></div>
+        <div class="form-group"><input type="text" id="location" placeholder="Location (City, Country)"></div>
+        <div class="form-group"><input type="text" id="interests" placeholder="Travel Interests (e.g. hiking, beaches, food)" onkeydown="if(event.key==='Enter')doRegister()"></div>
+        <button class="register-btn" id="registerBtn" onclick="doRegister()">Register</button>
+
+        <div class="bottom-text">
+            Already have an account? <a href="/login.html">Login</a>
+            <a href="/" class="back-home-link"><i class="fa-solid fa-house"></i> Back to Home</a>
+        </div>
+    </div>
+</div>
+
+<script src="/js/auth.js"></script>
+<script>
+async function doRegister() {
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const location = document.getElementById('location').value.trim();
+    const interests = document.getElementById('interests').value
+        .split(',').map(s => s.trim()).filter(Boolean);
+
+    const btn = document.getElementById('registerBtn');
+    const errorMsg = document.getElementById('errorMsg');
+
+    // Client-side validation
+    if (!name) { showError('Please enter your full name.'); return; }
+    if (!email) { showError('Please enter your email address.'); return; }
+    if (password.length < 6) { showError('Password must be at least 6 characters long.'); return; }
+    if (password !== confirmPassword) { showError('Passwords do not match.'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Creating account...';
+    errorMsg.style.display = 'none';
+
+    try {
+        const res = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password, location, travelInterests: interests })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            showError(data.error || 'Registration failed.');
+            btn.disabled = false;
+            btn.textContent = 'Register';
+            return;
+        }
+
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        window.location.href = '/dashboard.html';
+    } catch (err) {
+        showError('Connection error. Please try again.');
+        btn.disabled = false;
+        btn.textContent = 'Register';
+    }
+}
+
+function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg;
+    el.style.display = 'block';
+}
+</script>
+</body>
+</html>
