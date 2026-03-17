@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Experiences – Buddy Hub</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/dashboard.html" class="logo">BUDDY<span>HUB</span></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/dashboard.html">Dashboard</a></li>
+      <li><a href="/matches.html">Explore</a></li>
+      <li><a href="/my-trips.html">My Trips</a></li>
+      <li><a href="/chat.html">Chat</a></li>
+      <li><a href="/experiences.html" class="active">Experiences</a></li>
+      <li><a href="/discover.html">Discover</a></li>
+      <li><button class="theme-toggle" onclick="toggleTheme()"><i class="fa-solid fa-moon" id="themeIcon"></i></button></li>
+      <li><a href="/profile.html"><img class="nav-avatar" src="https://ui-avatars.com/api/?name=U&background=fa9e1b&color=fff" alt=""></a></li>
+      <li><a href="#" onclick="logout()" style="color:#ef4444"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+    </ul>
+    <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')"><i class="fa-solid fa-bars"></i></button>
+  </nav>
+
+  <div class="page-wrapper">
+    <div class="page-container">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:center;">
+        <div><h1>Travel Experiences</h1><p>Share and discover incredible journeys</p></div>
+        <button class="btn btn-primary" onclick="openShareModal()"><i class="fa-solid fa-plus"></i> Share Experience</button>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" onclick="loadExperiences('all',this)"><i class="fa-solid fa-globe"></i> All</button>
+        <button class="tab" onclick="loadExperiences('my',this)"><i class="fa-solid fa-user"></i> My Experiences</button>
+      </div>
+
+      <div id="experiencesList" class="experience-grid"><div class="loading-spinner" style="grid-column:1/-1"></div></div>
+    </div>
+  </div>
+
+  <!-- Share Experience Modal -->
+  <div class="modal-overlay" id="shareModal">
+    <div class="modal" style="position:relative">
+      <button class="modal-close" onclick="closeShareModal()"><i class="fa-solid fa-xmark"></i></button>
+      <h2 id="modalTitle">Share Your Experience</h2>
+      <input type="hidden" id="editId" value="">
+      <div class="form-group">
+        <label class="form-label"><i class="fa-solid fa-heading"></i> Title</label>
+        <input type="text" id="expTitle" class="form-input" placeholder="Give your experience a title">
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fa-solid fa-location-dot"></i> Location</label>
+        <input type="text" id="expLocation" class="form-input" placeholder="Where was this?">
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fa-solid fa-align-left"></i> Story</label>
+        <textarea id="expStory" class="form-textarea" rows="5" placeholder="Tell your story..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fa-solid fa-calendar"></i> Travel Date</label>
+        <input type="date" id="expDate" class="form-input">
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fa-solid fa-camera"></i> Photos</label>
+        <input type="file" id="expPhotos" class="form-input" multiple accept="image/*">
+      </div>
+      <button class="btn btn-primary btn-block btn-lg" onclick="saveExperience()"><span id="saveBtnText">Share</span> <i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+  <script src="/js/theme.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/experiences.js"></script>
+</body>
+</html>
