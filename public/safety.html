@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Safety – Buddy Hub</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/dashboard.html" class="logo">BUDDY<span>HUB</span></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/dashboard.html">Dashboard</a></li>
+      <li><a href="/matches.html">Explore</a></li>
+      <li><a href="/my-trips.html">My Trips</a></li>
+      <li><a href="/chat.html">Chat</a></li>
+      <li><a href="/safety.html" class="active">Safety</a></li>
+      <li><a href="/discover.html">Discover</a></li>
+      <li><button class="theme-toggle" onclick="toggleTheme()"><i class="fa-solid fa-moon" id="themeIcon"></i></button></li>
+      <li><a href="/profile.html"><img class="nav-avatar" src="https://ui-avatars.com/api/?name=U&background=fa9e1b&color=fff" alt=""></a></li>
+      <li><a href="#" onclick="logout()" style="color:#ef4444"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+    </ul>
+    <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')"><i class="fa-solid fa-bars"></i></button>
+  </nav>
+
+  <div class="page-wrapper">
+    <div class="page-container">
+      <div class="page-header">
+        <h1><i class="fa-solid fa-shield-halved" style="color:#22c55e"></i> Safety Center</h1>
+        <p>Stay safe during your travels</p>
+      </div>
+
+      <div class="safety-grid">
+        <!-- Check In with Timer -->
+        <div class="safety-card animate-in">
+          <h3 style="font-family:var(--font-heading);margin-bottom:1rem;"><i class="fa-solid fa-check-circle" style="color:#22c55e"></i> Safety Check In</h3>
+          <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1rem;">Press the button to let companions know you're safe. If you miss the check-in, your last known location will be automatically shared with all trip companions.</p>
+          
+          <!-- Timer Display -->
+          <div id="checkinTimerContainer" style="margin-bottom:1.5rem;">
+            <div style="background:var(--bg-section);border-radius:var(--radius-md);padding:1rem;text-align:center;">
+              <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.5rem;">Next check-in due in:</p>
+              <div id="checkinTimer" style="font-size:2rem;font-weight:800;font-family:var(--font-heading);color:var(--primary);">--:--:--</div>
+              <div id="timerStatus" style="font-size:0.75rem;margin-top:0.5rem;color:var(--text-muted);">No active trips</div>
+            </div>
+          </div>
+
+          <button class="checkin-btn" id="checkinBtn" onclick="performCheckIn()">
+            <i class="fa-solid fa-check"></i><span>Check In Now</span>
+          </button>
+          <p id="lastCheckin" style="font-size:0.8rem;color:var(--text-muted);margin-top:1rem;"></p>
+        </div>
+
+        <!-- Emergency SOS -->
+        <div class="safety-card animate-in animate-in-1">
+          <h3 style="font-family:var(--font-heading);margin-bottom:1.5rem;"><i class="fa-solid fa-triangle-exclamation" style="color:#ef4444"></i> Emergency SOS</h3>
+          <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1.5rem;">Send an emergency alert to all trip members</p>
+          <button class="sos-btn" onclick="sendSOS()">
+            <i class="fa-solid fa-exclamation"></i><span>SOS</span>
+          </button>
+        </div>
+
+        <!-- Active Trip Members -->
+        <div class="safety-card animate-in animate-in-2" style="grid-column:1/-1;">
+          <h3 style="font-family:var(--font-heading);margin-bottom:1.5rem;"><i class="fa-solid fa-users" style="color:var(--primary)"></i> Active Trip Members</h3>
+          <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1rem;">Select a trip to view member safety status</p>
+          <select id="tripSelect" class="form-select" style="max-width:400px;margin:0 auto 1.5rem;" onchange="loadTripSafety()">
+            <option value="">Select a trip...</option>
+          </select>
+          <div id="memberSafety" class="member-safety-list" style="max-width:600px;margin:0 auto;"></div>
+        </div>
+
+        <!-- Auto-Alert Info -->
+        <div class="safety-card animate-in animate-in-3" style="grid-column:1/-1;">
+          <h3 style="font-family:var(--font-heading);margin-bottom:1rem;"><i class="fa-solid fa-bell" style="color:#f59e0b"></i> Auto Safety Alerts</h3>
+          <div style="background:var(--bg-section);border-radius:var(--radius-md);padding:1.25rem;">
+            <div style="display:flex;align-items:flex-start;gap:1rem;">
+              <i class="fa-solid fa-shield-heart" style="font-size:2rem;color:#22c55e;flex-shrink:0;margin-top:0.25rem;"></i>
+              <div>
+                <p style="font-size:0.9rem;color:var(--text-primary);line-height:1.6;margin-bottom:0.75rem;">
+                  <strong>How it works:</strong> During active trips, the system monitors your check-in status. If you miss pressing the check-in button within the required interval, your <strong>last known location</strong> will be automatically shared with all your trip companions via a safety alert notification.
+                </p>
+                <p style="font-size:0.85rem;color:var(--text-muted);line-height:1.6;">
+                  <i class="fa-solid fa-clock" style="color:var(--primary)"></i> Check-in interval: <strong id="checkinInterval">60 minutes</strong><br>
+                  <i class="fa-solid fa-location-dot" style="color:#ef4444"></i> Location is shared only when you miss a check-in<br>
+                  <i class="fa-solid fa-bell" style="color:#f59e0b"></i> Companions receive an alert with your last coordinates
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+  <script src="/js/theme.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/safety.js"></script>
+</body>
+</html>
