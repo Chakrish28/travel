@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Trips – Buddy Hub</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/dashboard.html" class="logo">BUDDY<span>HUB</span></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/dashboard.html">Dashboard</a></li>
+      <li><a href="/matches.html">Explore</a></li>
+      <li><a href="/my-trips.html" class="active">My Trips</a></li>
+      <li><a href="/chat.html">Chat</a></li>
+      <li><a href="/experiences.html">Experiences</a></li>
+      <li><a href="/discover.html">Discover</a></li>
+      <li><button class="theme-toggle" onclick="toggleTheme()"><i class="fa-solid fa-moon" id="themeIcon"></i></button></li>
+      <li><a href="/profile.html"><img class="nav-avatar" src="https://ui-avatars.com/api/?name=U&background=fa9e1b&color=fff" alt=""></a></li>
+      <li><a href="#" onclick="logout()" style="color:#ef4444"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+    </ul>
+    <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')"><i class="fa-solid fa-bars"></i></button>
+  </nav>
+
+  <div class="page-wrapper">
+    <div class="page-container">
+      <div class="page-header" style="display:flex;justify-content:space-between;align-items:center;">
+        <div><h1>My Trips</h1><p>Manage your adventures</p></div>
+        <button class="btn btn-primary" onclick="openCreateModal()"><i class="fa-solid fa-plus"></i> Create Trip</button>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" onclick="filterTrips('all',this)">All</button>
+        <button class="tab" onclick="filterTrips('upcoming',this)">Upcoming</button>
+        <button class="tab" onclick="filterTrips('active',this)">Active</button>
+        <button class="tab" onclick="filterTrips('completed',this)">Completed</button>
+        <button class="tab" onclick="filterTrips('cancelled',this)">Cancelled</button>
+        <button class="tab" onclick="filterTrips('requests',this)">Requests</button>
+      </div>
+
+      <div id="tripsList" class="trip-grid"><div class="loading-spinner" style="grid-column:1/-1"></div></div>
+      <div id="requestsSection" style="display:none;"><div id="requestsList"></div></div>
+    </div>
+  </div>
+
+  <!-- Create Trip Modal -->
+  <div class="modal-overlay" id="createModal">
+    <div class="modal" style="position:relative">
+      <button class="modal-close" onclick="closeCreateModal()"><i class="fa-solid fa-xmark"></i></button>
+      <h2>Create New Trip</h2>
+      <form id="createTripForm" onsubmit="return false;">
+        <div class="form-group">
+          <label class="form-label"><i class="fa-solid fa-plane-departure"></i> From Location <span style="color:#ef4444">*</span></label>
+          <input type="text" id="tripFrom" class="form-input" placeholder="Where are you starting from?" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label"><i class="fa-solid fa-location-dot"></i> To (Destination) <span style="color:#ef4444">*</span></label>
+          <input type="text" id="tripDest" class="form-input" placeholder="Where are you going?" required>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-group"><label class="form-label"><i class="fa-solid fa-calendar"></i> Start Date</label><input type="date" id="tripStart" class="form-input" required onchange="onStartDateChange()"></div>
+          <div class="form-group"><label class="form-label"><i class="fa-solid fa-calendar-check"></i> End Date</label><input type="date" id="tripEnd" class="form-input" required></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-group"><label class="form-label"><i class="fa-solid fa-user-group"></i> Trip Type</label><select id="tripType" class="form-select" onchange="updateMaxP()"><option value="duo">Duo (2 people)</option><option value="group">Group</option></select></div>
+          <div class="form-group"><label class="form-label"><i class="fa-solid fa-users"></i> Max Participants</label><input type="number" id="tripMaxP" class="form-input" value="2" min="2" max="20"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:1rem;">
+          <div class="form-group"><label class="form-label"><i class="fa-solid fa-coins"></i> Currency</label><select id="tripCurrency" class="form-select"><option value="USD">$ USD</option><option value="INR">₹ INR</option><option value="EUR">€ EUR</option><option value="GBP">£ GBP</option><option value="JPY">¥ JPY</option><option value="AUD">A$ AUD</option><option value="CAD">C$ CAD</option><option value="SGD">S$ SGD</option><option value="AED">د.إ AED</option></select></div>
+          <div class="form-group"><label class="form-label"><i class="fa-solid fa-wallet"></i> Budget <span style="color:#ef4444">*</span></label><input type="number" id="tripBudget" class="form-input" placeholder="Estimated budget" required></div>
+        </div>
+        <div class="form-group"><label class="form-label"><i class="fa-solid fa-compass"></i> Travel Style</label><input type="text" id="tripStyle" class="form-input" placeholder="e.g. Backpacking, Luxury, Adventure"></div>
+        <div class="form-group"><label class="form-label"><i class="fa-solid fa-align-left"></i> Description</label><textarea id="tripDesc" class="form-textarea" placeholder="Describe your trip..."></textarea></div>
+        <div class="form-group">
+          <label class="form-label"><i class="fa-solid fa-image"></i> Cover Photo <span style="font-size:0.75rem;color:var(--text-muted)">(optional)</span></label>
+          <input type="file" id="tripCoverPhoto" class="form-input" accept="image/*" style="padding:10px">
+          <div id="coverPreview" style="display:none;margin-top:8px;border-radius:8px;overflow:hidden;max-height:150px"><img id="coverPreviewImg" style="width:100%;max-height:150px;object-fit:cover;border-radius:8px" alt=""></div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-lg" onclick="createTrip()">Create Trip <i class="fa-solid fa-arrow-right"></i></button>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+  <script src="/js/theme.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/trips.js"></script>
+</body>
+</html>
