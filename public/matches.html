@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Explore – Buddy Hub</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/dashboard.html" class="logo">BUDDY<span>HUB</span></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/dashboard.html">Dashboard</a></li>
+      <li><a href="/matches.html" class="active">Explore</a></li>
+      <li><a href="/my-trips.html">My Trips</a></li>
+      <li><a href="/chat.html">Chat</a></li>
+      <li><a href="/experiences.html">Experiences</a></li>
+      <li><a href="/discover.html">Discover</a></li>
+      <li><button class="theme-toggle" onclick="toggleTheme()"><i class="fa-solid fa-moon" id="themeIcon"></i></button></li>
+      <li><a href="/profile.html"><img class="nav-avatar" id="navAvatar" src="https://ui-avatars.com/api/?name=U&background=fa9e1b&color=fff" alt=""></a></li>
+      <li><a href="#" onclick="logout()" style="color:#ef4444"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+    </ul>
+    <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')"><i class="fa-solid fa-bars"></i></button>
+  </nav>
+
+  <div class="page-wrapper">
+    <div class="page-container">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('trips',this)"><i class="fa-solid fa-map"></i> Explore Trips</button>
+        <button class="tab" onclick="switchTab('companions',this)"><i class="fa-solid fa-users"></i> Companions</button>
+        <button class="tab" onclick="switchTab('search',this)"><i class="fa-solid fa-search"></i> Search</button>
+      </div>
+
+      <div id="searchSection" style="display:none;margin-bottom:1.5rem;">
+        <div style="display:flex;gap:0.75rem;">
+          <input type="text" id="searchInput" class="form-input" placeholder="Search travelers by name or location..." style="flex:1">
+          <button class="btn btn-primary" onclick="searchUsers()"><i class="fa-solid fa-search"></i> Search</button>
+        </div>
+        <div id="searchResults" class="trip-grid" style="margin-top:1.5rem;"></div>
+      </div>
+
+      <div id="tripsSection">
+        <div class="page-header"><h1>Explore Trips</h1><p>Discover adventures waiting for you</p></div>
+        <div style="display:flex;gap:0.75rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+          <input type="text" id="tripSearchFrom" class="form-input" placeholder="From location..." style="flex:1;min-width:150px">
+          <input type="text" id="tripSearchTo" class="form-input" placeholder="To location..." style="flex:1;min-width:150px">
+          <button class="btn btn-primary" onclick="loadTrips()"><i class="fa-solid fa-search"></i> Search</button>
+        </div>
+        <div id="tripsList" class="trip-grid"><div class="loading-spinner" style="grid-column:1/-1"></div></div>
+      </div>
+
+      <div id="companionsSection" style="display:none;">
+        <div class="page-header"><h1>Companion Matches</h1><p>Travelers who share your interests</p></div>
+        <div id="matchesList" class="trip-grid"><div class="loading-spinner" style="grid-column:1/-1"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+  <script src="/js/theme.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    const API=''; const token=localStorage.getItem('token');
+    const currentUser=JSON.parse(localStorage.getItem('user')||'{}');
+    if(!token)window.location.href='/login.html';
+
+    const CURRENCY_SYMBOLS = { USD: '$', INR: '₹', EUR: '€', GBP: '£', JPY: '¥', AUD: 'A$', CAD: 'C$', SGD: 'S$', AED: 'د.إ' };
+    function getCurrencySymbol(code) { return CURRENCY_SYMBOLS[code] || code || '$'; }
+
+    function switchTab(tab,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.getElementById('tripsSection').style.display=tab==='trips'?'block':'none';document.getElementById('companionsSection').style.display=tab==='companions'?'block':'none';document.getElementById('searchSection').style.display=tab==='search'?'block':'none';}
+
+    async function loadTrips(){
+      const from = document.getElementById('tripSearchFrom').value.trim();
+      const to = document.getElementById('tripSearchTo').value.trim();
+      let url = `${API}/api/trips/explore`;
+      const params = [];
+      if(from) params.push(`from=${encodeURIComponent(from)}`);
+      if(to) params.push(`to=${encodeURIComponent(to)}`);
+      if(params.length) url += '?' + params.join('&');
+
+      try{const res=await fetch(url,{headers:{'Authorization':`Bearer ${token}`}});const data=await res.json();if(!data.trips||!data.trips.length){document.getElementById('tripsList').innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="icon"><i class="fa-solid fa-map"></i></div><h3>No trips found</h3><p>Try different search terms or check back later!</p></div>';return;}
+    document.getElementById('tripsList').innerHTML=data.trips.map(t=>{
+      const cs = getCurrencySymbol(t.currency);
+      const fromTo = t.from_location ? `${t.from_location} → ${t.destination}` : t.destination;
+      const heroStyle = t.cover_image ? `background-image:url('${t.cover_image}');background-size:cover;background-position:center;` : '';
+      return `
+      <div class="trip-card">
+        <div class="trip-card-image" style="${heroStyle}">${!t.cover_image ? '<i class="fa-solid fa-earth-americas" style="font-size:3rem;opacity:0.3"></i>' : ''}<span class="trip-card-badge ${t.trip_type==='duo'?'badge-duo':'badge-group'}">${t.trip_type}</span></div>
+        <div class="trip-card-body"><h3>${fromTo}</h3><div class="trip-card-meta"><span><i class="fa-solid fa-calendar"></i> ${new Date(t.start_date).toLocaleDateString()} - ${new Date(t.end_date).toLocaleDateString()}</span><span><i class="fa-solid fa-users"></i> ${t.member_count}/${t.max_participants}</span></div><p style="color:var(--text-muted);font-size:0.85rem;margin-top:0.5rem">${t.travel_style||'Adventure'} · ${t.budget ? cs + t.budget : 'Flexible'}</p></div>
+        <div class="trip-card-footer"><div class="trip-host"><img src="${t.host_picture||`https://ui-avatars.com/api/?name=${encodeURIComponent(t.host_name)}&background=fa9e1b&color=fff`}" alt=""><span>${t.host_name}</span></div><button class="btn btn-primary btn-sm" onclick="joinTrip(${t.id})">Join</button></div>
+      </div>`;}).join('');}catch(err){console.error(err);}}
+
+    async function loadMatches(){try{const res=await fetch(`${API}/api/users/matches`,{headers:{'Authorization':`Bearer ${token}`}});const data=await res.json();if(!data.matches||!data.matches.length){document.getElementById('matchesList').innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="icon"><i class="fa-solid fa-users"></i></div><h3>No matches yet</h3><p>Add more travel interests to your profile!</p></div>';return;}
+    document.getElementById('matchesList').innerHTML=data.matches.map(m=>`
+      <div class="card" style="text-align:center;padding:1.5rem;">
+        <img src="${m.profile_picture||`https://ui-avatars.com/api/?name=${encodeURIComponent(m.name)}&background=fa9e1b&color=fff`}" alt="" style="width:70px;height:70px;border-radius:50%;object-fit:cover;margin:0 auto 1rem;border:3px solid var(--primary)">
+        <h3 style="font-family:var(--font-heading);font-weight:700;font-size:1rem">${m.name}</h3>
+        <p style="color:var(--text-muted);font-size:0.8rem;margin-bottom:0.5rem"><i class="fa-solid fa-location-dot"></i> ${m.location||'Unknown'}</p>
+        <p style="color:var(--primary);font-size:0.9rem;font-weight:700;margin-bottom:0.5rem">${Math.round(m.matchScore)}% Match</p>
+        <div class="interest-tags" style="justify-content:center;margin-bottom:1rem">${(m.commonInterests||[]).map(i=>`<span class="interest-tag">${i}</span>`).join('')}</div>
+        <div style="display:flex;gap:0.5rem;justify-content:center"><a href="/profile.html?id=${m.id}" class="btn btn-secondary btn-sm">Profile</a><a href="/chat.html?user=${m.id}" class="btn btn-primary btn-sm">Chat</a></div>
+      </div>`).join('');}catch(err){console.error(err);}}
+
+    async function joinTrip(tripId){try{const res=await fetch(`${API}/api/trips/${tripId}/join`,{method:'POST',headers:{'Authorization':`Bearer ${token}`}});const data=await res.json();showToast(data.message||data.error,res.ok?'success':'error');if(res.ok)loadTrips();}catch(err){showToast('Request failed','error');}}
+
+    async function searchUsers(){const q=document.getElementById('searchInput').value;if(!q)return;try{const res=await fetch(`${API}/api/users/search?q=${encodeURIComponent(q)}`,{headers:{'Authorization':`Bearer ${token}`}});const data=await res.json();document.getElementById('searchResults').innerHTML=data.users.length?data.users.map(u=>`
+      <div class="card" style="display:flex;align-items:center;gap:1rem;padding:1.25rem;">
+        <img src="${u.profile_picture||`https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=fa9e1b&color=fff`}" alt="" style="width:50px;height:50px;border-radius:50%;object-fit:cover;">
+        <div style="flex:1"><strong>${u.name}</strong><p style="font-size:0.8rem;color:var(--text-muted)"><i class="fa-solid fa-location-dot"></i> ${u.location||'N/A'} · Score: ${Math.round(u.companion_score)}</p>${u.matchScore !== undefined ? `<p style="font-size:0.8rem;color:var(--primary);font-weight:700">${Math.round(u.matchScore)}% Match</p>` : ''}</div>
+        <a href="/profile.html?id=${u.id}" class="btn btn-sm btn-secondary">View</a>
+        <a href="/chat.html?user=${u.id}" class="btn btn-sm btn-primary">Chat</a>
+      </div>`).join(''):'<div class="empty-state"><p>No travelers found</p></div>';}catch(err){console.error(err);}}
+
+    function showToast(msg,type='info'){const c=document.getElementById('toastContainer');const t=document.createElement('div');t.className=`toast toast-${type}`;t.textContent=msg;c.appendChild(t);setTimeout(()=>t.remove(),3000);}
+
+    loadTrips(); loadMatches();
+  </script>
+</body>
+</html>
