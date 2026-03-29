@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat – Buddy Hub</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/dashboard.html" class="logo">BUDDY<span>HUB</span></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/dashboard.html">Dashboard</a></li>
+      <li><a href="/matches.html">Explore</a></li>
+      <li><a href="/my-trips.html">My Trips</a></li>
+      <li><a href="/chat.html" class="active">Chat</a></li>
+      <li><a href="/experiences.html">Experiences</a></li>
+      <li><a href="/discover.html">Discover</a></li>
+      <li><button class="theme-toggle" onclick="toggleTheme()"><i class="fa-solid fa-moon" id="themeIcon"></i></button></li>
+      <li><a href="/profile.html"><img class="nav-avatar" src="https://ui-avatars.com/api/?name=U&background=fa9e1b&color=fff" alt=""></a></li>
+      <li><a href="#" onclick="logout()" style="color:#ef4444"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+    </ul>
+    <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')"><i class="fa-solid fa-bars"></i></button>
+  </nav>
+
+  <div class="chat-layout">
+    <div class="chat-sidebar">
+      <div class="chat-sidebar-header">
+        <h3><i class="fa-solid fa-comments" style="color:var(--primary)"></i> Conversations</h3>
+      </div>
+      <div class="chat-list" id="conversationList">
+        <div class="loading-spinner"></div>
+      </div>
+    </div>
+    <div class="chat-main">
+      <div class="chat-header" id="chatHeader">
+        <i class="fa-solid fa-comment-dots" style="font-size:1.5rem;color:var(--text-muted)"></i>
+        <div><h3>Select a conversation</h3><p style="font-size:0.8rem;color:var(--text-muted)">Choose a companion to chat with</p></div>
+      </div>
+      <div class="chat-messages" id="chatMessages">
+        <div class="empty-state" style="margin:auto">
+          <div class="icon"><i class="fa-solid fa-paper-plane"></i></div>
+          <h3>No conversation selected</h3>
+          <p>Pick a companion from the sidebar to start chatting</p>
+        </div>
+      </div>
+      <div class="chat-input-area" id="chatInputArea" style="display:none;">
+        <input type="text" id="messageInput" placeholder="Type your message..." onkeydown="if(event.key==='Enter')sendMessage()">
+        <button class="btn btn-primary" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/theme.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/chat.js"></script>
+</body>
+</html>
