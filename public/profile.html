@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile – Buddy Hub</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/dashboard.html" class="logo">BUDDY<span>HUB</span></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/dashboard.html">Dashboard</a></li>
+      <li><a href="/matches.html">Explore</a></li>
+      <li><a href="/my-trips.html">My Trips</a></li>
+      <li><a href="/chat.html">Chat</a></li>
+      <li><a href="/experiences.html">Experiences</a></li>
+      <li><a href="/discover.html">Discover</a></li>
+      <li><button class="theme-toggle" onclick="toggleTheme()"><i class="fa-solid fa-moon" id="themeIcon"></i></button></li>
+      <li><a href="/profile.html" class="active">Profile</a></li>
+      <li><a href="#" onclick="logout()" style="color:#ef4444"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+    </ul>
+    <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')"><i class="fa-solid fa-bars"></i></button>
+  </nav>
+
+  <div class="page-wrapper">
+    <div class="page-container">
+      <div class="profile-grid">
+        <!-- Sidebar -->
+        <div class="profile-sidebar">
+          <div class="profile-card">
+            <div style="position:relative; display:inline-block;">
+              <img class="profile-avatar" id="profileAvatar" src="https://ui-avatars.com/api/?name=U&background=fa9e1b&color=fff&size=200" alt="">
+              <label for="avatarUpload" id="avatarUploadLabel" style="position:absolute;bottom:5px;right:5px;width:36px;height:36px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+                <i class="fa-solid fa-camera" style="font-size:14px"></i>
+              </label>
+              <input type="file" id="avatarUpload" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
+            </div>
+            <h2 class="profile-name" id="profileName">Loading...</h2>
+            <p class="profile-location" id="profileLocation"><i class="fa-solid fa-location-dot"></i> Location</p>
+
+            <div class="score-circle" id="profileScore" style="--score:50; margin-top:1.5rem;">
+              <div class="score-circle-inner">
+                <div class="score-value" id="profileScoreVal">50</div>
+                <div class="score-label">/ 100</div>
+              </div>
+            </div>
+            <p style="font-size:0.8rem; color:var(--text-muted);">Companion Score</p>
+
+            <div class="profile-stats">
+              <div>
+                <div class="profile-stat-value" id="pCompletedTrips">0</div>
+                <div class="profile-stat-label">Trips</div>
+              </div>
+              <div>
+                <div class="profile-stat-value" id="pTotalReviews">0</div>
+                <div class="profile-stat-label">Reviews</div>
+              </div>
+            </div>
+
+            <div class="interest-tags" id="interestTags"></div>
+            <div id="profileActions" style="margin-top:1.5rem;"></div>
+          </div>
+        </div>
+
+        <!-- Main -->
+        <div class="profile-main">
+          <div class="profile-section" id="editSection">
+            <h3><i class="fa-solid fa-pen-to-square" style="color:var(--primary)"></i> Edit Profile</h3>
+            <form id="editForm" onsubmit="return false;">
+              <div class="form-group">
+                <label class="form-label"><i class="fa-solid fa-user"></i> Name</label>
+                <input type="text" id="editName" class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label"><i class="fa-solid fa-location-dot"></i> Location</label>
+                <input type="text" id="editLocation" class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label"><i class="fa-solid fa-align-left"></i> Bio</label>
+                <textarea id="editBio" class="form-textarea" placeholder="Tell travelers about yourself..."></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label"><i class="fa-solid fa-compass"></i> Travel Interests</label>
+                <input type="text" id="editInterests" class="form-input" placeholder="e.g. hiking, culture, food">
+              </div>
+              
+              <h4 style="margin:1.5rem 0 1rem;font-size:1rem;color:var(--dark);"><i class="fa-solid fa-shield-halved" style="color:var(--primary)"></i> Safety & Emergency</h4>
+              <div class="form-group">
+                <label class="form-label"><i class="fa-brands fa-telegram"></i> Your Telegram Chat ID</label>
+                <input type="text" id="editPhone" class="form-input" placeholder="e.g. 7692289258">
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                <div class="form-group">
+                  <label class="form-label"><i class="fa-solid fa-user-shield"></i> Guardian Name</label>
+                  <input type="text" id="editGuardianName" class="form-input" placeholder="Parent / Partner">
+                </div>
+                <div class="form-group">
+                  <label class="form-label"><i class="fa-brands fa-telegram"></i> Guardian Telegram ID</label>
+                  <input type="text" id="editGuardianPhone" class="form-input" placeholder="e.g. 7692289258">
+                </div>
+              </div>
+
+              <button class="btn btn-primary" onclick="saveProfile()">Save Changes <i class="fa-solid fa-check"></i></button>
+            </form>
+          </div>
+
+          <div class="profile-section" id="bioSection" style="display:none;">
+            <h3><i class="fa-solid fa-align-left" style="color:var(--primary)"></i> About</h3>
+            <p id="profileBio" style="color:var(--text-secondary); font-family:var(--font-elegant); font-style:italic; line-height:1.7;"></p>
+          </div>
+
+          <div class="profile-section">
+            <h3><i class="fa-solid fa-calendar-days" style="color:var(--primary)"></i> Upcoming Trips</h3>
+            <div id="profileTrips"><div class="empty-state"><p>No upcoming trips</p></div></div>
+          </div>
+
+          <div class="profile-section">
+            <h3><i class="fa-solid fa-star" style="color:var(--primary)"></i> Reviews</h3>
+            <div id="profileReviews"><div class="empty-state"><p>No reviews yet</p></div></div>
+          </div>
+
+          <div class="profile-section">
+            <h3><i class="fa-solid fa-images" style="color:var(--primary)"></i> Travel Experiences</h3>
+            <div id="profileExperiences"><div class="empty-state"><p>No experiences shared yet</p></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+  <script src="/js/theme.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    const API = '';
+    const token = localStorage.getItem('token');
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!token) window.location.href = '/login.html';
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const viewUserId = urlParams.get('id');
+    const isOwnProfile = !viewUserId || parseInt(viewUserId) === currentUser.id;
+
+    async function loadProfile() {
+      try {
+        const url = isOwnProfile ? `${API}/api/users/profile` : `${API}/api/users/profile/${viewUserId}`;
+        const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        const u = data.user;
+
+        document.getElementById('profileName').innerHTML = `${u.name} <span style="font-size:1rem;color:var(--text-muted);font-weight:400">#${u.id}</span>`;
+        document.getElementById('profileLocation').innerHTML = '<i class="fa-solid fa-location-dot"></i> ' + (u.location || 'Not set');
+        document.getElementById('profileScoreVal').textContent = Math.round(u.companion_score);
+        document.getElementById('profileScore').style.setProperty('--score', u.companion_score);
+        document.getElementById('pCompletedTrips').textContent = u.completed_trips;
+        document.getElementById('pTotalReviews').textContent = u.total_reviews;
+
+        if (u.profile_picture) document.getElementById('profileAvatar').src = u.profile_picture;
+        else document.getElementById('profileAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=fa9e1b&color=fff&size=200`;
+
+        const interests = u.travel_interests || [];
+        document.getElementById('interestTags').innerHTML = interests.map(i => `<span class="interest-tag">${i}</span>`).join('');
+
+        if (isOwnProfile) {
+          document.getElementById('avatarUploadLabel').style.display = 'flex';
+          document.getElementById('editName').value = u.name;
+          document.getElementById('editLocation').value = u.location || '';
+          document.getElementById('editBio').value = u.bio || '';
+          document.getElementById('editInterests').value = interests.join(', ');
+          document.getElementById('editPhone').value = u.phone_number || '';
+          document.getElementById('editGuardianName').value = u.guardian_name || '';
+          document.getElementById('editGuardianPhone').value = u.guardian_phone || '';
+          document.getElementById('editSection').style.display = 'block';
+          document.getElementById('bioSection').style.display = 'none';
+        } else {
+          document.getElementById('avatarUploadLabel').style.display = 'none';
+          document.getElementById('editSection').style.display = 'none';
+          document.getElementById('bioSection').style.display = 'block';
+          document.getElementById('profileBio').textContent = u.bio || 'No bio set.';
+          document.getElementById('profileActions').innerHTML = `
+            <a href="/chat.html?user=${viewUserId}" class="btn btn-primary btn-block" style="margin-bottom:0.5rem"><i class="fa-solid fa-comment"></i> Message</a>
+            <button class="btn btn-secondary btn-block btn-sm" onclick="blockUser(${viewUserId})"><i class="fa-solid fa-ban"></i> Block</button>
+          `;
+        }
+
+        if (data.upcomingTrips && data.upcomingTrips.length) {
+          document.getElementById('profileTrips').innerHTML = data.upcomingTrips.map(t => `
+            <div style="display:flex;align-items:center;gap:1rem;padding:0.75rem;border-radius:var(--radius-md);background:var(--bg-section);margin-bottom:0.5rem;">
+              <i class="fa-solid fa-map-location-dot" style="font-size:1.25rem;color:var(--primary)"></i>
+              <div><strong>${t.destination}</strong><p style="font-size:0.8rem;color:var(--text-muted)">${new Date(t.start_date).toLocaleDateString()} → ${new Date(t.end_date).toLocaleDateString()}</p></div>
+              <span class="trip-card-badge ${t.status==='active'?'badge-active':'badge-upcoming'}" style="margin-left:auto">${t.status}</span>
+            </div>`).join('');
+        }
+
+        if (data.reviews && data.reviews.length) {
+          document.getElementById('profileReviews').innerHTML = data.reviews.map(r => `
+            <div class="review-card">
+              <div class="review-header"><div><strong style="font-size:0.875rem">${r.reviewer?.name||'Unknown'}</strong><div class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div></div></div>
+              <p class="review-comment">${r.comment||'No comment.'}</p>
+            </div>`).join('');
+        }
+
+        // Load experiences
+        const expUserId = isOwnProfile ? currentUser.id : viewUserId;
+        try {
+          const expRes = await fetch(`${API}/api/experiences/user/${expUserId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+          const expData = await expRes.json();
+          if (expData.experiences && expData.experiences.length) {
+            document.getElementById('profileExperiences').innerHTML = expData.experiences.map(e => `
+              <div style="background:var(--bg-section);border-radius:var(--radius-md);padding:1rem;margin-bottom:0.75rem;">
+                <h4 style="font-family:var(--font-heading);font-weight:700;font-size:0.95rem;margin-bottom:0.25rem;">${e.title}</h4>
+                ${e.location ? `<p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.5rem;"><i class="fa-solid fa-location-dot"></i> ${e.location}</p>` : ''}
+                ${e.description ? `<p style="font-size:0.85rem;color:var(--text-secondary);font-family:var(--font-elegant);font-style:italic;line-height:1.6;margin-bottom:0.5rem;">${e.description}</p>` : ''}
+                ${e.travelDate ? `<p style="font-size:0.75rem;color:var(--text-muted);"><i class="fa-solid fa-calendar"></i> ${new Date(e.travelDate).toLocaleDateString()}</p>` : ''}
+                ${e.photos && e.photos.length ? `<div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem;">${e.photos.map(p => `<img src="${p}" alt="" style="width:80px;height:80px;object-fit:cover;border-radius:var(--radius-sm);">`).join('')}</div>` : ''}
+              </div>`).join('');
+          }
+        } catch(expErr) { console.error('Experiences load error:', expErr); }
+      } catch (err) { console.error(err); }
+    }
+
+    async function saveProfile() {
+      const body = { 
+        name: document.getElementById('editName').value, 
+        location: document.getElementById('editLocation').value, 
+        bio: document.getElementById('editBio').value, 
+        travelInterests: document.getElementById('editInterests').value.split(',').map(s=>s.trim()).filter(Boolean),
+        phone_number: document.getElementById('editPhone').value,
+        guardian_name: document.getElementById('editGuardianName').value,
+        guardian_phone: document.getElementById('editGuardianPhone').value
+      };
+      try { const res=await fetch(`${API}/api/users/profile`,{method:'PUT',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify(body)}); const data=await res.json(); showToast(data.message||'Profile updated!','success'); loadProfile(); } catch(err){ showToast('Update failed','error'); }
+    }
+    async function uploadAvatar(input) {
+      if(!input.files[0])return; const fd=new FormData(); fd.append('picture',input.files[0]);
+      try { const res=await fetch(`${API}/api/users/profile/picture`,{method:'POST',headers:{'Authorization':`Bearer ${token}`},body:fd}); const data=await res.json(); showToast(data.message||'Picture uploaded!','success'); loadProfile(); } catch(err){ showToast('Upload failed','error'); }
+    }
+    async function blockUser(id) { if(!confirm('Block this user?'))return; await fetch(`${API}/api/users/block/${id}`,{method:'POST',headers:{'Authorization':`Bearer ${token}`}}); showToast('User blocked','success'); }
+
+    function showToast(msg,type='info'){const c=document.getElementById('toastContainer');const t=document.createElement('div');t.className=`toast toast-${type}`;t.textContent=msg;c.appendChild(t);setTimeout(()=>t.remove(),3000);}
+    loadProfile();
+  </script>
+</body>
+</html>
