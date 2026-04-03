@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trip Details – Buddy Hub</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/dashboard.html" class="logo">BUDDY<span>HUB</span></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/dashboard.html">Dashboard</a></li>
+      <li><a href="/matches.html">Explore</a></li>
+      <li><a href="/my-trips.html" class="active">My Trips</a></li>
+      <li><a href="/chat.html">Chat</a></li>
+      <li><a href="/safety.html">Safety</a></li>
+      <li><a href="/discover.html">Discover</a></li>
+      <li><button class="theme-toggle" onclick="toggleTheme()"><i class="fa-solid fa-moon" id="themeIcon"></i></button></li>
+      <li><a href="/profile.html"><img class="nav-avatar" src="https://ui-avatars.com/api/?name=U&background=fa9e1b&color=fff" alt=""></a></li>
+    </ul>
+    <button class="hamburger" onclick="document.getElementById('navLinks').classList.toggle('open')"><i class="fa-solid fa-bars"></i></button>
+  </nav>
+
+  <div class="page-wrapper">
+    <div class="page-container">
+      <div class="page-header" id="tripHeader"><h1>Loading trip...</h1></div>
+
+      <div class="dashboard-grid">
+        <!-- Trip Info -->
+        <div class="dashboard-card animate-in">
+          <h3><i class="fa-solid fa-circle-info" style="color:var(--primary)"></i> Trip Information</h3>
+          <div id="tripInfo"><div class="loading-spinner"></div></div>
+        </div>
+
+        <!-- Members -->
+        <div class="dashboard-card animate-in animate-in-1">
+          <h3><i class="fa-solid fa-users" style="color:var(--primary)"></i> Members</h3>
+          <div id="membersList"></div>
+          <div id="inviteArea" style="margin-top:1rem;display:none;">
+            <div style="display:flex;gap:0.5rem;"><input type="number" id="inviteUserId" class="form-input" placeholder="User ID"><button class="btn btn-primary btn-sm" onclick="inviteUser()"><i class="fa-solid fa-paper-plane"></i> Invite</button></div>
+          </div>
+        </div>
+
+        <!-- Requests (Host only) -->
+        <div class="dashboard-card animate-in" id="requestsCard" style="display:none">
+          <h3><i class="fa-solid fa-inbox" style="color:var(--primary)"></i> Join Requests</h3>
+          <div id="requestsList"></div>
+        </div>
+
+        <!-- Finalization (Pending proposals) -->
+        <div class="dashboard-card full animate-in" id="finalizationCard" style="display:none">
+          <h3><i class="fa-solid fa-calendar-check" style="color:var(--primary)"></i> Finalization Proposal</h3>
+          <div id="finalizationContent"></div>
+        </div>
+
+        <!-- Itinerary -->
+        <div class="dashboard-card full animate-in animate-in-1">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+            <h3><i class="fa-solid fa-map" style="color:var(--primary)"></i> Trip Itinerary</h3>
+            <button class="btn btn-primary btn-sm" id="addItineraryBtn" style="display:none;" onclick="showItineraryForm()"><i class="fa-solid fa-plus"></i> Add Day</button>
+          </div>
+          
+          <div id="itineraryForm" style="display:none;background:var(--bg-section);padding:1rem;border-radius:var(--radius-md);margin-bottom:1rem;">
+            <div class="form-group">
+              <label class="form-label">Day / Title</label>
+              <input type="text" id="itineraryDay" class="form-input" placeholder="e.g. Day 1: Arrival">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Plan</label>
+              <textarea id="itineraryDesc" class="form-textarea" placeholder="What are we doing?"></textarea>
+            </div>
+            <div style="display:flex;gap:0.5rem;justify-content:flex-end;">
+              <button class="btn btn-secondary btn-sm" onclick="hideItineraryForm()">Cancel</button>
+              <button class="btn btn-primary btn-sm" onclick="saveItineraryItem()">Save</button>
+            </div>
+          </div>
+          
+          <div id="itineraryList" style="display:flex;flex-direction:column;gap:1rem;">
+             <div class="empty-state"><p>No itinerary planned yet.</p></div>
+          </div>
+        </div>
+
+        <!-- Group Chat -->
+        <div class="dashboard-card full animate-in animate-in-2">
+          <h3><i class="fa-solid fa-comments" style="color:var(--primary)"></i> Group Chat</h3>
+          <div id="groupChat" style="max-height:350px;overflow-y:auto;background:var(--bg-section);border-radius:var(--radius-md);padding:1rem;margin-bottom:1rem;">
+            <div class="loading-spinner"></div>
+          </div>
+          <div id="chatInputArea" style="display:flex;gap:0.5rem;">
+            <input type="text" id="chatInput" class="form-input" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendGroupMsg()">
+            <button class="btn btn-primary" onclick="sendGroupMsg()"><i class="fa-solid fa-paper-plane"></i></button>
+          </div>
+        </div>
+
+        <!-- Expenses -->
+        <div class="dashboard-card full animate-in animate-in-3">
+          <h3><i class="fa-solid fa-receipt" style="color:var(--primary)"></i> Expenses</h3>
+          <div id="expensesList" class="expense-list"></div>
+          <div id="settlements" style="margin-top:1.5rem;"></div>
+          <div id="totalSpent" style="margin-top:0.5rem;text-align:right;font-size:0.9rem;color:var(--text-muted)"></div>
+          <div id="expenseForm" style="margin-top:1rem;background:var(--bg-section);padding:1rem;border-radius:var(--radius-md);">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.75rem;">
+              <div class="form-group" style="margin:0"><label class="form-label">Description</label><input type="text" id="expenseDesc" class="form-input" placeholder="What for?"></div>
+              <div class="form-group" style="margin:0"><label class="form-label">Total Amount</label><input type="number" id="expenseAmount" class="form-input" placeholder="0.00" step="0.01"></div>
+            </div>
+            <div id="owesSection" style="margin-bottom:0.75rem;"></div>
+            <button class="btn btn-primary btn-block" onclick="addExpense()"><i class="fa-solid fa-plus"></i> Add Expense</button>
+          </div>
+        </div>
+
+        <!-- Safety (Active trips) -->
+        <div class="dashboard-card animate-in" id="safetyCard" style="display:none">
+          <h3><i class="fa-solid fa-shield-halved" style="color:#ef4444"></i> Emergency Options</h3>
+          <div style="display:flex;justify-content:center;padding:1rem;">
+            <button class="sos-btn" onclick="sendSOS()"><i class="fa-solid fa-exclamation"></i><span>SOS</span></button>
+          </div>
+        </div>
+
+        <!-- Reviews (Completed trips) -->
+        <div class="dashboard-card animate-in" id="reviewCard" style="display:none">
+          <h3><i class="fa-solid fa-pen" style="color:var(--primary)"></i> Leave a Review</h3>
+          <div class="form-group">
+            <label class="form-label">Member</label>
+            <select id="reviewMember" class="form-select"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Rating</label>
+            <select id="reviewRating" class="form-select"><option value="5">⭐⭐⭐⭐⭐ (5)</option><option value="4">⭐⭐⭐⭐ (4)</option><option value="3">⭐⭐⭐ (3)</option><option value="2">⭐⭐ (2)</option><option value="1">⭐ (1)</option></select>
+          </div>
+          <div class="form-group"><label class="form-label">Comment</label><textarea id="reviewComment" class="form-textarea" placeholder="Share your experience..."></textarea></div>
+          <button class="btn btn-primary" onclick="submitReview()"><i class="fa-solid fa-paper-plane"></i> Submit Review</button>
+        </div>
+
+        <!-- Trip Management (Host only) -->
+        <div class="dashboard-card animate-in" id="managementCard" style="display:none">
+          <h3><i class="fa-solid fa-gear" style="color:var(--primary)"></i> Manage Trip</h3>
+          <div style="display:flex;flex-direction:column;gap:0.5rem;" id="managementButtons">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Finalization Modal -->
+  <div class="modal-overlay" id="finalizeModal">
+    <div class="modal" style="position:relative">
+      <button class="modal-close" onclick="closeFinalizeModal()"><i class="fa-solid fa-xmark"></i></button>
+      <h2>Finalize Trip Details</h2>
+      <p style="margin-bottom:1rem;color:var(--text-muted);font-size:0.9rem">Propose final dates and budget to your companions. They will vote to accept or reject.</p>
+      <div class="form-group">
+        <label class="form-label">Start Date</label>
+        <input type="date" id="finStartDate" class="form-input" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">End Date</label>
+        <input type="date" id="finEndDate" class="form-input" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Final Budget ($)</label>
+        <input type="number" id="finBudget" class="form-input">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Additional Details / Itinerary</label>
+        <textarea id="finDesc" class="form-textarea" rows="3" placeholder="Any final thoughts before everyone confirms..."></textarea>
+      </div>
+      <button class="btn btn-primary btn-block" onclick="submitFinalization()">Propose Details</button>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+  <script src="/js/theme.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    const API=''; const token=localStorage.getItem('token'); const currentUser=JSON.parse(localStorage.getItem('user')||'{}');
+    if(!token)window.location.href='/login.html';
+    const tripId=new URLSearchParams(window.location.search).get('id');
+    if(!tripId)window.location.href='/my-trips.html';
+
+    const CURRENCY_SYMBOLS = { USD: '$', INR: '₹', EUR: '€', GBP: '£', JPY: '¥', AUD: 'A$', CAD: 'C$', SGD: 'S$', AED: 'د.إ' };
+    function getCurrencySymbol(code) { return CURRENCY_SYMBOLS[code] || code || '$'; }
+
+    let tripData=null; let members=[]; let tripRequests=[];
+
+    async function loadTrip(){
+      try{const res=await fetch(`${API}/api/trips/${tripId}`,{headers:{'Authorization':`Bearer ${token}`}});const data=await res.json();tripData=data.trip;
+      document.getElementById('tripHeader').innerHTML=`<h1>${tripData.from_location ? tripData.from_location + ' → ' : ''}${tripData.destination}</h1><p><span class="trip-card-badge ${tripData.status==='active'?'badge-active':tripData.status==='completed'?'badge-completed':tripData.status==='cancelled'?'badge-cancelled':'badge-upcoming'}">${tripData.status}</span> · ${tripData.trip_type==='duo'?'Duo':'Group'} Trip</p>`;
+      const cs = getCurrencySymbol(tripData.currency);
+      document.getElementById('tripInfo').innerHTML=`
+        <div style="display:grid;gap:0.75rem;">
+          ${tripData.from_location ? `<div style="display:flex;align-items:center;gap:0.75rem;"><i class="fa-solid fa-plane-departure" style="color:var(--primary)"></i><div><small style="color:var(--text-muted)">From</small><p style="font-weight:700">${tripData.from_location}</p></div></div>` : ''}
+          <div style="display:flex;align-items:center;gap:0.75rem;"><i class="fa-solid fa-location-dot" style="color:var(--primary)"></i><div><small style="color:var(--text-muted)">To</small><p style="font-weight:700">${tripData.destination}</p></div></div>
+          <div style="display:flex;align-items:center;gap:0.75rem;"><i class="fa-solid fa-calendar-days" style="color:var(--primary)"></i><div><small style="color:var(--text-muted)">Dates</small><p style="font-weight:700">${new Date(tripData.start_date).toLocaleDateString()} → ${new Date(tripData.end_date).toLocaleDateString()}</p></div></div>
+          <div style="display:flex;align-items:center;gap:0.75rem;"><i class="fa-solid fa-wallet" style="color:var(--primary)"></i><div><small style="color:var(--text-muted)">Budget</small><p style="font-weight:700">${tripData.budget ? cs + tripData.budget : 'Flexible'} ${tripData.currency ? '(' + tripData.currency + ')' : ''}</p></div></div>
+          <div style="display:flex;align-items:center;gap:0.75rem;"><i class="fa-solid fa-compass" style="color:var(--primary)"></i><div><small style="color:var(--text-muted)">Style</small><p style="font-weight:700">${tripData.travel_style||'Not set'}</p></div></div>
+          ${tripData.description?`<p style="color:var(--text-secondary);font-family:var(--font-elegant);font-style:italic;margin-top:0.5rem;padding-top:0.75rem;border-top:1px solid var(--card-border)">${tripData.description}</p>`:''}
+        </div>`;
+      members=data.members||[];
+      tripRequests=data.requests||[];
+      renderMembers(); loadGroupChat(); loadExpenses();
+
+      const isTripEnded = ['completed', 'cancelled'].includes(tripData.status);
+
+      // Hide chat input, expense form, itinerary button for completed/cancelled trips
+      if (isTripEnded) {
+        document.getElementById('chatInputArea').style.display = 'none';
+        document.getElementById('expenseForm').style.display = 'none';
+        stopChatPoll();
+      }
+
+      if(tripData.status==='active')document.getElementById('safetyCard').style.display='block';
+      if(tripData.status==='completed')document.getElementById('reviewCard').style.display='block';
+      if(tripData.host_id===currentUser.id && tripData.status!=='completed' && tripData.status!=='cancelled'){
+        document.getElementById('managementCard').style.display='block';
+        
+        // Only show invite area before trip starts
+        const preStartStatuses = ['draft','invited','upcoming'];
+        if(preStartStatuses.includes(tripData.status)) {
+          document.getElementById('inviteArea').style.display='block';
+        }
+        
+        // Dynamically build management buttons based on status
+        let mgmtHtml = '';
+        if(preStartStatuses.includes(tripData.status)) {
+           mgmtHtml += `<button class="btn btn-success btn-block" onclick="startTrip()"><i class="fa-solid fa-play"></i> Start Trip</button>`;
+           mgmtHtml += `<button class="btn btn-primary btn-block" onclick="openFinalizeModal()"><i class="fa-solid fa-calendar-check"></i> Finalize Dates</button>`;
+           mgmtHtml += `<button class="btn ${tripData.requests_closed ? 'btn-success' : 'btn-secondary'} btn-block" id="toggleRequestsBtn" onclick="toggleRequests()"><i class="fa-solid ${tripData.requests_closed ? 'fa-unlock' : 'fa-lock'}"></i> ${tripData.requests_closed ? 'Open Requests' : 'Close Requests'}</button>`;
+        }
+        if(tripData.status === 'active') {
+           mgmtHtml += `<button class="btn btn-success btn-block" onclick="completeTrip()"><i class="fa-solid fa-flag-checkered"></i> Complete Trip</button>`;
+        }
+        if(tripData.status === 'draft') {
+           mgmtHtml += `<button class="btn btn-danger btn-block" onclick="deleteTrip()"><i class="fa-solid fa-trash"></i> Delete Trip</button>`;
+        } else {
+           mgmtHtml += `<button class="btn btn-danger btn-block" onclick="cancelTrip()"><i class="fa-solid fa-xmark"></i> Cancel Trip</button>`;
+        }
+        
+        document.getElementById('managementButtons').innerHTML = mgmtHtml;
+        renderRequests();
+      }
+      loadFinalization();
+      renderItinerary();
+      }catch(err){console.error(err);}
+    }
+
+    function renderItinerary() {
+      const isHost = tripData.host_id === currentUser.id;
+      const canEdit = isHost && tripData.status !== 'completed' && tripData.status !== 'cancelled';
+      if (canEdit) {
+        document.getElementById('addItineraryBtn').style.display = 'block';
+      }
+      const list = document.getElementById('itineraryList');
+      if (!tripData.itinerary || !tripData.itinerary.length) {
+        list.innerHTML = '<div class="empty-state"><p>No itinerary planned yet.</p></div>';
+        return;
+      }
+      list.innerHTML = tripData.itinerary.map((item, idx) => `
+        <div style="padding:1rem;border-radius:var(--radius-md);background:var(--bg-section);border-left:4px solid var(--primary);" id="itinerary-${idx}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div style="flex:1">
+              <h4 style="margin-bottom:0.25rem;">${item.day}</h4>
+              <p style="font-size:0.9rem;color:var(--text-secondary);white-space:pre-wrap;">${item.description}</p>
+            </div>
+            ${canEdit ? `<div style="display:flex;gap:0.25rem;margin-left:0.5rem;flex-shrink:0;">
+              <button class="btn btn-sm btn-secondary" onclick="editItineraryItem(${idx})" title="Edit"><i class="fa-solid fa-pen"></i></button>
+              <button class="btn btn-sm btn-danger" onclick="deleteItineraryItem(${idx})" title="Delete"><i class="fa-solid fa-trash"></i></button>
+            </div>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+    let editingItineraryIdx = -1;
+    function showItineraryForm(editIdx){ 
+      editingItineraryIdx = editIdx !== undefined ? editIdx : -1;
+      if(editingItineraryIdx >= 0 && tripData.itinerary[editingItineraryIdx]) {
+        document.getElementById('itineraryDay').value = tripData.itinerary[editingItineraryIdx].day;
+        document.getElementById('itineraryDesc').value = tripData.itinerary[editingItineraryIdx].description;
+      }
+      document.getElementById('itineraryForm').style.display='block'; 
+    }
+    function hideItineraryForm(){ document.getElementById('itineraryForm').style.display='none'; document.getElementById('itineraryDay').value=''; document.getElementById('itineraryDesc').value=''; editingItineraryIdx=-1; }
+    function editItineraryItem(idx) { showItineraryForm(idx); }
+    async function deleteItineraryItem(idx) {
+      if(!confirm('Delete this itinerary item?')) return;
+      const newItinerary = tripData.itinerary.filter((_, i) => i !== idx);
+      try {
+        const res = await fetch(`${API}/api/trips/${tripId}`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ itinerary: newItinerary })
+        });
+        if(res.ok) { tripData.itinerary = newItinerary; renderItinerary(); showToast('Item deleted', 'success'); }
+        else showToast('Failed to delete', 'error');
+      } catch(err) { showToast('Error', 'error'); }
+    }
+    async function saveItineraryItem(){
+      const day = document.getElementById('itineraryDay').value.trim();
+      const desc = document.getElementById('itineraryDesc').value.trim();
+      if(!day) return showToast('Title required', 'error');
+      let newItinerary;
+      if(editingItineraryIdx >= 0) {
+        // Editing existing item
+        newItinerary = [...(tripData.itinerary || [])];
+        newItinerary[editingItineraryIdx] = { day, description: desc };
+      } else {
+        // Adding new item
+        newItinerary = [...(tripData.itinerary || []), { day, description: desc }];
+      }
+      try {
+        const res = await fetch(`${API}/api/trips/${tripId}`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ itinerary: newItinerary })
+        });
+        if(res.ok) {
+          tripData.itinerary = newItinerary;
+          hideItineraryForm();
+          renderItinerary();
+          showToast(editingItineraryIdx >= 0 ? 'Item updated' : 'Item added', 'success');
+        } else showToast('Failed to save', 'error');
+      } catch(err) { showToast('Error saving itinerary', 'error'); }
+    }
+
+    function renderMembers(){
+      document.getElementById('membersList').innerHTML=members.length?members.map(m=>`
+        <div class="member-safety-item">
+          <img src="${m.profile_picture||`https://ui-avatars.com/api/?name=${encodeURIComponent(m.name)}&background=fa9e1b&color=fff`}" alt="">
+          <div><strong style="font-size:0.85rem">${m.name}</strong><p style="font-size:0.75rem;color:var(--text-muted)">${m.role==='host'?'🛡️ Host':'Member'}</p></div>
+          <div style="margin-left:auto;display:flex;gap:0.5rem">
+            <a href="/profile.html?id=${m.user_id}" class="btn btn-sm btn-secondary">Profile</a>
+            ${tripData.host_id===currentUser.id && m.user_id!==currentUser.id && ['draft','invited','upcoming'].includes(tripData.status) ? `<button class="btn btn-sm btn-danger" onclick="removeMember(${m.user_id})"><i class="fa-solid fa-trash"></i></button>` : ''}
+          </div>
+        </div>`).join(''):'<p style="color:var(--text-muted)">No members</p>';
+      if(tripData.status==='completed'){
+        const sel=document.getElementById('reviewMember');
+        if(sel) {
+          const otherMembers = members.filter(m=>Number(m.user_id)!==Number(currentUser.id));
+          sel.innerHTML=otherMembers.length ? otherMembers.map(m=>`<option value="${m.user_id}">${m.name}</option>`).join('') : '<option disabled selected>No companions to review</option>';
+        }
+      }
+    }
+
+    async function loadGroupChat(){
+      try{const res=await fetch(`${API}/api/chat/trip/${tripId}`,{headers:{'Authorization':`Bearer ${token}`}});const data=await res.json();const msgs=data.messages||[];
+      document.getElementById('groupChat').innerHTML=msgs.length?msgs.map(m=>`<div class="message ${m.senderId===currentUser.id?'sent':'received'}"><strong style="font-size:0.75rem">${m.senderName||'User'}</strong><p>${m.message}</p><span class="message-time">${new Date(m.createdAt).toLocaleTimeString()}</span></div>`).join(''):'<div class="empty-state"><p>No messages yet. Say hello!</p></div>';
+      }catch(err){ document.getElementById('groupChat').innerHTML='<div class="empty-state"><p>Chat unavailable</p></div>'; }
+    }
+
+    async function sendGroupMsg(){const msg=document.getElementById('chatInput').value.trim();if(!msg)return;
+      try{await fetch(`${API}/api/chat/trip/${tripId}`,{method:'POST',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({message:msg})});document.getElementById('chatInput').value='';loadGroupChat();}catch(err){showToast('Failed to send','error');}
+    }
+
+    async function loadExpenses(){
+      try{const res=await fetch(`${API}/api/expenses/${tripId}`,{headers:{'Authorization':`Bearer ${token}`}});const data=await res.json();
+      const cs = getCurrencySymbol(tripData.currency);
+      if(data.expenses&&data.expenses.length){
+        document.getElementById('expensesList').innerHTML=data.expenses.map(e=>`
+          <div class="expense-item">
+            <div>
+              <strong>${e.description||'Expense'}</strong>
+              <p style="font-size:0.75rem;color:var(--text-muted)">Paid by ${e.paid_by_name}</p>
+              ${e.owes_details && e.owes_details.length ? `<div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.25rem">${e.owes_details.map(o=>`<span style="margin-right:0.5rem">${o.name} owes ${cs}${parseFloat(o.amount).toFixed(2)}</span>`).join('')}</div>`:''}
+            </div>
+            <span class="expense-amount">${cs}${parseFloat(e.amount).toFixed(2)}</span>
+          </div>`).join('');
+        if(data.settlements&&data.settlements.length)document.getElementById('settlements').innerHTML='<h4 style="font-size:0.9rem;font-weight:700;margin-bottom:0.5rem">Who Owes Whom</h4>'+data.settlements.map(s=>`<div class="settlement-item"><span>${s.from}</span><span class="settlement-arrow">→ ${cs}${s.amount.toFixed(2)} →</span><span>${s.to}</span></div>`).join('');
+        document.getElementById('totalSpent').innerHTML=`<strong>Total: ${cs}${data.totalSpent.toFixed(2)}</strong>`;
+      }else{document.getElementById('expensesList').innerHTML='<div class="empty-state"><p>No expenses yet</p></div>';}
+      // Render owes checkboxes
+      renderOwesSection();
+      }catch(err){console.error(err);}
+    }
+
+    function renderOwesSection() {
+      const section = document.getElementById('owesSection');
+      if(!section || !members.length) return;
+      const otherMembers = members.filter(m => m.user_id !== currentUser.id);
+      if(!otherMembers.length) { section.innerHTML='<p style="font-size:0.8rem;color:var(--text-muted)">No other members to split with</p>'; return; }
+      section.innerHTML = `
+        <label class="form-label">Who owes you?</label>
+        <div style="display:flex;flex-direction:column;gap:0.5rem;">
+          ${otherMembers.map(m => `
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+              <input type="checkbox" id="owes-${m.user_id}" class="owes-check" data-uid="${m.user_id}" data-name="${m.name}">
+              <label for="owes-${m.user_id}" style="font-size:0.85rem;flex:1;">${m.name}</label>
+              <input type="number" id="owes-amt-${m.user_id}" class="form-input" style="width:100px;padding:0.35rem 0.5rem;font-size:0.8rem;" placeholder="Amount" step="0.01" disabled>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      // Enable/disable amount inputs on checkbox change
+      document.querySelectorAll('.owes-check').forEach(cb => {
+        cb.addEventListener('change', () => {
+          const amtInput = document.getElementById('owes-amt-' + cb.dataset.uid);
+          amtInput.disabled = !cb.checked;
+          if(!cb.checked) amtInput.value = '';
+        });
+      });
+    }
+
+    async function addExpense(){
+      const desc=document.getElementById('expenseDesc').value;
+      const amount=parseFloat(document.getElementById('expenseAmount').value);
+      if(!amount)return showToast('Enter total amount','error');
+      
+      // Collect owes from checkboxes
+      const owes = [];
+      document.querySelectorAll('.owes-check:checked').forEach(cb => {
+        const uid = parseInt(cb.dataset.uid);
+        const name = cb.dataset.name;
+        const oweAmt = parseFloat(document.getElementById('owes-amt-' + uid).value);
+        if(oweAmt > 0) owes.push({ userId: uid, name, amount: oweAmt });
+      });
+      if(!owes.length) return showToast('Select at least one person who owes you','error');
+      
+      const splitBetween = [currentUser.id, ...owes.map(o => o.userId)];
+      try{
+        await fetch(`${API}/api/expenses/${tripId}`,{
+          method:'POST',
+          headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},
+          body: JSON.stringify({ description: desc, amount, split_between: splitBetween, owes })
+        });
+        showToast('Expense added!','success');
+        document.getElementById('expenseDesc').value='';
+        document.getElementById('expenseAmount').value='';
+        loadExpenses();
+      }catch(err){showToast('Failed','error');}
+    }
+
+    function renderRequests(){
+      if(tripRequests&&tripRequests.length){document.getElementById('requestsCard').style.display='block';document.getElementById('requestsList').innerHTML=tripRequests.map(r=>`
+        <div class="member-safety-item"><div><strong>${r.name||'User #'+r.user_id}</strong><p style="font-size:0.75rem;color:var(--text-muted)">${r.type}</p></div><div style="display:flex;gap:0.5rem;margin-left:auto"><button class="btn btn-success btn-sm" onclick="handleRequest(${r.id},'accept')"><i class="fa-solid fa-check"></i></button><button class="btn btn-danger btn-sm" onclick="handleRequest(${r.id},'reject')"><i class="fa-solid fa-xmark"></i></button></div></div>`).join('');
+      }else{document.getElementById('requestsCard').style.display='none';document.getElementById('requestsList').innerHTML='<div class="empty-state"><p>No pending requests</p></div>';}
+    }
+
+    async function handleRequest(requestId,action){try{const res=await fetch(`${API}/api/trips/requests/${requestId}`,{method:'POST',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({action})});const d=await res.json();showToast(d.message||d.error,res.ok?'success':'error');loadTrip();}catch(err){showToast('Failed','error');}}
+    async function inviteUser(){const uid=document.getElementById('inviteUserId').value;if(!uid)return;try{const res=await fetch(`${API}/api/trips/${tripId}/invite`,{method:'POST',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({userId:parseInt(uid)})});const d=await res.json();showToast(d.message||d.error,res.ok?'success':'error');}catch(err){showToast('Failed','error');}}
+    async function checkIn(){try{navigator.geolocation.getCurrentPosition(async pos=>{await fetch(`${API}/api/safety/checkin`,{method:'POST',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({tripId,latitude:pos.coords.latitude,longitude:pos.coords.longitude})});showToast('Checked in!','success');},()=>showToast('Location access denied','error'));}catch(err){showToast('Check-in failed','error');}}
+    async function sendSOS(){if(!confirm('SEND SOS ALERT?'))return;try{navigator.geolocation.getCurrentPosition(async pos=>{await fetch(`${API}/api/safety/sos`,{method:'POST',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({tripId,latitude:pos.coords.latitude,longitude:pos.coords.longitude})});showToast('SOS SENT!','error');});}catch(err){showToast('SOS failed','error');}}
+    async function cancelTrip(){if(!confirm('Cancel this trip?'))return;try{const res=await fetch(`${API}/api/trips/${tripId}`,{method:'DELETE',headers:{'Authorization':`Bearer ${token}`}});const d=await res.json();if(res.ok){showToast('Trip cancelled','success');setTimeout(()=>window.location.href='/my-trips.html',1500);}else{showToast(d.error||'Failed','error');}}catch(err){showToast('Failed','error');}}
+    async function deleteTrip(){if(!confirm('Permanently delete this trip? This cannot be undone.'))return;try{const res=await fetch(`${API}/api/trips/${tripId}/delete`,{method:'DELETE',headers:{'Authorization':`Bearer ${token}`}});const d=await res.json();if(res.ok){showToast('Trip deleted','success');setTimeout(()=>window.location.href='/my-trips.html',1500);}else{showToast(d.error||'Failed','error');}}catch(err){showToast('Failed','error');}}
+    async function submitReview(){const revieweeId=document.getElementById('reviewMember').value;const rating=parseInt(document.getElementById('reviewRating').value);const comment=document.getElementById('reviewComment').value;
+      try{const res=await fetch(`${API}/api/reviews`,{method:'POST',headers:{'Authorization':`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({tripId:parseInt(tripId),revieweeId:parseInt(revieweeId),rating,comment})});const d=await res.json();showToast(d.message||d.error,res.ok?'success':'error');}catch(err){showToast('Failed','error');}}
+
+    async function loadFinalization() {
+      try {
+        const res = await fetch(`${API}/api/trips/${tripId}/finalize`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        const card = document.getElementById('finalizationCard');
+        const content = document.getElementById('finalizationContent');
+        if (data.current) {
+          card.style.display = 'block';
+          const f = data.current;
+          const myVote = f.votes.find(v => v.userId === currentUser.id);
+          let html = `
+            <div style="padding:1rem;background:var(--bg-section);border-radius:var(--radius-md);">
+              <p style="font-weight:700;margin-bottom:0.5rem">Dates: ${new Date(f.start_date).toLocaleDateString()} → ${new Date(f.end_date).toLocaleDateString()}</p>
+              <p style="margin-bottom:0.5rem"><strong>Budget:</strong> $${f.budget||0}</p>
+              ${f.description ? `<p style="margin-bottom:1rem;font-style:italic;color:var(--text-muted)">"${f.description}"</p>` : ''}
+              <div style="margin-top:1rem;border-top:1px solid var(--card-border);padding-top:1rem;">
+                <h4 style="font-size:0.9rem;margin-bottom:0.5rem">Votes (${f.votes.length}/${f.totalVoters})</h4>
+                ${f.votes.map(v => `<div style="font-size:0.8rem;margin-bottom:0.25rem"><strong style="color:${v.vote==='accept'?'#22c55e':'#ef4444'}">${v.vote.toUpperCase()}</strong> - ${v.userName} ${v.comment ? `(${v.comment})` : ''}</div>`).join('')}
+              </div>
+          `;
+          if (tripData.host_id !== currentUser.id && !myVote) {
+             html += `
+              <div style="display:flex;gap:0.5rem;margin-top:1rem;">
+                <input type="text" id="voteComment" class="form-input" placeholder="Optional comment" style="flex:1">
+                <button class="btn btn-success" onclick="voteFinalization('accept')"><i class="fa-solid fa-check"></i> Accept</button>
+                <button class="btn btn-danger" onclick="voteFinalization('reject')"><i class="fa-solid fa-xmark"></i> Reject</button>
+              </div>`;
+          } else if (myVote) {
+             html += `<div style="margin-top:1rem;padding:0.5rem;background:var(--bg-card);border-radius:var(--radius-sm);text-align:center;font-size:0.9rem">You voted to <strong>${myVote.vote}</strong>.</div>`;
+          }
+          html += `</div>`;
+          content.innerHTML = html;
+        } else {
+          card.style.display = 'none';
+        }
+      } catch (err) { console.error(err); }
+    }
+
+    function openFinalizeModal() {
+      if(tripData) {
+        document.getElementById('finStartDate').value = tripData.start_date.split('T')[0];
+        document.getElementById('finEndDate').value = tripData.end_date.split('T')[0];
+        document.getElementById('finBudget').value = tripData.budget || '';
+        document.getElementById('finDesc').value = tripData.description || '';
+      }
+      document.getElementById('finalizeModal').classList.add('open');
+    }
+    
+    function closeFinalizeModal() { document.getElementById('finalizeModal').classList.remove('open'); }
+
+    async function submitFinalization() {
+      const start_date = document.getElementById('finStartDate').value;
+      const end_date = document.getElementById('finEndDate').value;
+      if (!start_date || !end_date) return showToast('Dates are required', 'error');
+      try {
+        const res = await fetch(`${API}/api/trips/${tripId}/finalize`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            start_date, end_date,
+            budget: document.getElementById('finBudget').value,
+            description: document.getElementById('finDesc').value
+          })
+        });
+        const d = await res.json();
+        showToast(d.message || d.error, res.ok ? 'success' : 'error');
+        if (res.ok) { closeFinalizeModal(); loadFinalization(); }
+      } catch (err) { showToast('Proposal failed', 'error'); }
+    }
+
+    async function voteFinalization(vote) {
+      const comment = document.getElementById('voteComment').value;
+      try {
+        const res = await fetch(`${API}/api/trips/${tripId}/finalize/vote`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ vote, comment })
+        });
+        const d = await res.json();
+        showToast(d.message || d.error, res.ok ? 'success' : 'error');
+        if (res.ok) { loadFinalization(); if (d.status === 'accepted') loadTrip(); }
+      } catch (err) { showToast('Vote failed', 'error'); }
+    }
+
+    async function removeMember(userId) {
+      if (!confirm('Remove this member?')) return;
+      try {
+        const res = await fetch(`${API}/api/trips/${tripId}/members/${userId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const d = await res.json();
+        showToast(d.message || d.error, res.ok ? 'success' : 'error');
+        if (res.ok) loadTrip();
+      } catch (err) { showToast('Failed', 'error'); }
+    }
+
+    async function toggleRequests() {
+      try {
+        const res = await fetch(`${API}/api/trips/${tripId}/toggle-requests`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const d = await res.json();
+        showToast(d.message || d.error, res.ok ? 'success' : 'error');
+        if (res.ok) {
+           tripData.requests_closed = d.requests_closed;
+           const btn = document.getElementById('toggleRequestsBtn');
+           if (d.requests_closed) {
+             btn.innerHTML = '<i class="fa-solid fa-unlock"></i> Open Requests';
+             btn.classList.replace('btn-secondary', 'btn-success');
+           } else {
+             btn.innerHTML = '<i class="fa-solid fa-lock"></i> Close Requests';
+             btn.classList.replace('btn-success', 'btn-secondary');
+           }
+        }
+      } catch (err) { showToast('Failed', 'error'); }
+    }
+
+    async function startTrip() {
+      if(!confirm('Start this trip now? This will activate safety tracking!')) return;
+      try {
+        const res = await fetch(`${API}/api/trips/${tripId}/start`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+        const d = await res.json();
+        showToast(d.message || d.error, res.ok ? 'success' : 'error');
+        if(res.ok) { setTimeout(() => window.location.reload(), 1500); }
+      } catch (err) { showToast('Failed to start trip', 'error'); }
+    }
+
+    async function completeTrip() {
+      if(!confirm('Mark this trip as completed? This will disable safety tracking and allow reviews.')) return;
+      try {
+        const res = await fetch(`${API}/api/trips/${tripId}/complete`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+        const d = await res.json();
+        showToast(d.message || d.error, res.ok ? 'success' : 'error');
+        if(res.ok) { setTimeout(() => window.location.reload(), 1500); }
+      } catch (err) { showToast('Failed to complete trip', 'error'); }
+    }
+
+    function showToast(msg,type='info'){const c=document.getElementById('toastContainer');const t=document.createElement('div');t.className=`toast toast-${type}`;t.textContent=msg;c.appendChild(t);setTimeout(()=>t.remove(),3000);}
+    loadTrip(); 
+    let chatPollInterval = setInterval(loadGroupChat, 10000);
+    // Stop polling when trip is done
+    function stopChatPoll() { clearInterval(chatPollInterval); }
+  </script>
+</body>
+</html>
